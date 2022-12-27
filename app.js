@@ -1,30 +1,47 @@
 const fs = require('node:fs').promises;
 const path = require('node:path');
 
-setTimeout(()=>{
-    fs.readdir(__dirname, function (err, data) {
-        for (let item of data) {
+const boys = path.join(__dirname, 'boys');
+const girls = path.join(__dirname, 'girls');
 
-            fs.readdir(path.join(__dirname, item), function (err, data) {
-                if (data) {
-                    for (let name of data) {
-                        let file = path.join(__dirname, item, name);
+// function separate (dir) {
+//   fs.readdir(dir, (err, files) => {
+//         if (err){
+//             console.log(err);
+//         } else {
+//             for (const file of files){
+//                 fs.readFile(path.join(dir, file), 'utf8', (err, data) => {
+//                     if (err){
+//                         throw err;
+//                     } else {
+//                         if (JSON.parse(data).gender === "female"){
+//                             fs.rename(path.join(dir, file), path.join(girls, file), () => {});
+//                         } else fs.rename(path.join(dir, file), path.join(boys, file), () => {});
+//                     }
+//                 })
+//             }
+//         }
+//     });
+// }
 
-                        fs.readFile(file, (err, data) => {
-                            let json = JSON.parse(data);
+async function separate(dir) {
+    try {
+        const files = await fs.readdir(dir);
+        for (const file of files) {
+            const person = await fs.readFile(path.join(dir, file));
 
-                            if (json.sex === 'female') {
-                                fs.rename(file, path.join(__dirname, 'girls', name), (e) => {
-                                })
-                            } else {
-                                fs.rename(file, path.join(__dirname, 'boys', name), (e) => {
-                                })
-                            }
+            if (JSON.parse(person).gender === "male") {
+                await fs.rename(path.join(dir, file), path.join(boys, file))
+            } else {
+                await fs.rename(path.join(dir, file), path.join(girls, file))
+            }
 
-                        })
-                    }
-                }
-            })
         }
-    })
-}, 1)
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+separate(girls);
+separate(boys);
